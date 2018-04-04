@@ -36,7 +36,7 @@ webdriver.DesiredCapabilities.PHANTOMJS['phantomjs.page.customHeaders.User-Agent
     'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36'
 
 chrome_options = webdriver.ChromeOptions()
-# chrome_options.add_argument('--headless')
+chrome_options.add_argument('--headless')
 
 driver = webdriver.Chrome("/usr/lib/chromium-browser/chromedriver", chrome_options=chrome_options)
 
@@ -52,38 +52,51 @@ def check_exists_by_class(cls):
 
 
 def main():
-
     driver.get('http://psleci.nic.in/Default.aspx')
 
     state_select = Select(driver.find_element_by_name('ddlState'))
-    for state in state_select.options[1:]:
-        #os.makedirs("./" + str(state.text))
+    number_of_state = len(state_select.options)
+    for l in range(1, number_of_state):
+        state_select = Select(driver.find_element_by_name('ddlState'))
+        state = state_select.options[l]
         state_text = state.text
+        print(state_text)
         state_select.select_by_visible_text(state.text)
+        time.sleep(10)
         district_select = Select(driver.find_element_by_name('ddlDistrict'))
-        for district in district_select.options[1:]:
-            #os.makedirs("./" + state.text + "/" + district.text)
+        number_of_district = len(district_select.options)
+        for k in range(1, number_of_district):
+            district_select = Select(driver.find_element_by_name('ddlDistrict'))
+            district = district_select.options[k]
             district_text = district.text
+            print("\t" + district_text)
             district_select.select_by_visible_text(district.text)
+            time.sleep(10)
             ac_select = Select(driver.find_element_by_name('ddlAC'))
-            for ac in ac_select.options[1:]:
+            number_of_ac = len(ac_select.options)
+            for j in range(4, number_of_ac):
+                ac_select = Select(driver.find_element_by_name('ddlAC'))
+                ac = ac_select.options[j]
                 ac_text = ac.text
+                print("\t\t" + ac_text)
+                ac_select.select_by_visible_text(ac_text)
                 os.makedirs("./" + state_text + "/" + district_text + "/" + ac_text)
-                time.sleep(0.1)
-                ac_select.select_by_visible_text(ac.text)
-                ps_select = Select(driver.find_element_by_name('ddlPS'))
+                time.sleep(10)
+
+                #ps_select = Select(driver.find_element_by_name('ddlPS'))
                 driver.find_element_by_id("ImageButton1").click()
                 time.sleep(10)
                 number_of_ps = driver.execute_script("return markers.markers.length")
+                print("\t\t\t" + str(number_of_ps))
                 for i in range(0, number_of_ps):
+                    print("\t\t\t\t" + str(i))
                     driver.execute_script("google.maps.event.trigger(markers.getValue(" + str(i) + "), 'click');")
                     time.sleep(1)
                     popup_text = driver.execute_script(
                         "return document.getElementsByClassName('gm-style-iw')[0].innerText")
-                    #file = open("./" + state.text + "/" + district.text + "/" + ac.text + "/" + str(i) + ".txt", "w")
-                    #file.write(popup_text)
-                    #file.close()
-
+                    file = open("./" + state_text + "/" + district_text + "/" + ac_text + "/" + str(i) + ".txt", "w")
+                    file.write(popup_text)
+                    file.close()
     try:
         driver.close()
         driver.quit()
